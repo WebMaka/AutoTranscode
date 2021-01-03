@@ -13,6 +13,9 @@ immediately after the "-s".
 
 ## Path Arguments
 
+NOTE: Paths that contain whitespace will have to be enclosed in double-quotes, 
+as a space is a separator in commandline arguments.
+
 **-s /full/source/path**
 Source directory to monitor for files to auto-transcode. This must be a full
 path to a DIRECTORY which this script will monitor for files to auto-transcode.

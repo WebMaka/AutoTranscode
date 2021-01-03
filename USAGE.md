@@ -33,7 +33,7 @@ Destination path for source files once they've been transcoded. This must be a
 full path to a DIRECTORY into which each source file will be moved ocne ffmpeg
 has transcoded it. This directory must allow file create/write permissions to
 this script. IF THIS IS NOT PROVIDED, this script will append ".processed" to
-the end of each file once ffmpeg completes transcoding.
+the end of each file's name once ffmpeg completes transcoding.
 
 **-ffmpeg /full/path/to/ffmpeg** (OPTIONAL)
 Full path to ffmpeg, for situations where ffmpeg is not in a directory in the

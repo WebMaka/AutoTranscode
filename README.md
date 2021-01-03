@@ -53,8 +53,13 @@
                have a lot of storage space. The results are packed into a 
                Quicktime MOV container.
     
+    This script also supports the use of a configuration file for all of its
+    commandline options, and the config file also grants the capability to
+    use a custom ffmpeg commandline and container selection. For more info
+    on this, see CONFIGFILE.md.
     
-    REQUIREMENTS
+    
+    ## REQUIREMENTS
     
     This script requires the following:
     
@@ -85,7 +90,7 @@
       per hour range at 1080p60.    
     
     
-    PLEASE SUPPORT MY PROJECTS
+    ## PLEASE SUPPORT MY PROJECTS
     
     If this script helps your workflow, please consider donating to help 
     support my projects, including this one. Any amount helps and will be

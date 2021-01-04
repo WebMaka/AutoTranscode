@@ -3,7 +3,11 @@ Copyright © 2021 by WebMaka
 
 # Usage:
 
-**python auto_transcode.py TRANSCODE [OPTIONS ...] -s /full/source/path -d /full/dest/path [-f /full/finished/path] [-ffmpeg /full/path/to/ffmpeg] [-config /full/path/to/configfile]**
+**[sudo] python auto_transcode.py TRANSCODE [OPTIONS ...] -s /full/source/path -d /full/dest/path [-f /full/finished/path] [-ffmpeg /full/path/to/ffmpeg] [-config /full/path/to/configfile]**
+
+NOTE: This script requires elevated privileges. On Windows machines, an
+administrator-level account or UAC elevation is required. On Linux machines,
+run the script via sudo.
 
 NOTE: The script's argument/parameter parser doesn't require these be in any 
 particular order aside from requiring that a parameter immediately follow its 

@@ -53,6 +53,15 @@ The transcode presets include:
 		   have a lot of storage space. The results are packed into a 
 		   Quicktime MOV container.
 
+-plexhd/-plexsd : Transcodes into MP4 files optimized for delivery over Plex streaming 
+                   servers with minimal need for server-side transcoding. These formats
+		   use MPEG4 video and AAC audio, in either 1808p (-plexhd) or 720p
+		   (-plexsd) with settings intended to work without further server-side
+		   transcoding on the vast majority of Plex clients, including game
+		   consoles. Video that is in a different aspect ratio than 16x9 is
+		   automatically letterboxed or pillarboxed as required, and the
+		   framerate is adjusted to 30FPS.
+
 This script also supports the use of a configuration file for all of its
 commandline options, and the config file also grants the capability to
 use a custom ffmpeg commandline and container selection. For more info

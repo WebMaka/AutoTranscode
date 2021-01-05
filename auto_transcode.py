@@ -148,7 +148,7 @@ if len(sys.argv) > 1:
 
         # Davinci Resolve (Linux) import transcode
         if argument.lower() == "-davinci":
-            # These settings target Davinci Resolve 16.2 on Linux as the NLE,
+            # These settings build import files for Davinci Resolve 16.2 on Linux,
             # and will transcode things like Twitch streams into a format that
             # Resolve will work with without requiring further alteration.
             cmdline = [
@@ -156,14 +156,13 @@ if len(sys.argv) > 1:
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
-                          "-r 60", # Force framerate of source to 60FPS (add/drop frames)
                           "-hwaccel auto", # Hardware acceleration enabled, auto-detect
                           "-i %SOURCEFILE%", # Name of file to transcode
                           "-c:v mpeg4", # Transcode video to MPEG4
                           "-qscale:v 1", # Set video quality to max
                           "-c:a pcm_s16le", # Transcode audio to 16-bit PCM (LE byte order)
                           "-b:v 36m", # Set bitrate to 36mbps
-                          "-filter:v fps=fps=60", # Force output to 60FPS
+                          "-r 60", # Force framerate of output to 60FPS (add/drop frames)
                           "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
                           "%DESTFILE%" # Name and path for trandcode output (should be last)
                        ]
@@ -174,8 +173,6 @@ if len(sys.argv) > 1:
             # Set the description for later display.
             trans_mode = "Davinci Resolve 16+ Import - MPEG4 video, 16-bit PCM audio, MOV container"
 
-            # Advance the index.
-            index += 1
 
         # Youtube upload H.264 transcode
         elif argument.lower() == "-youtube":
@@ -187,20 +184,20 @@ if len(sys.argv) > 1:
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
-                          "-r 60", # Force framerate of source to 60FPS (add/drop frames)
                           "-hwaccel auto", # Hardware acceleration enabled, auto-detect
                           "-i %SOURCEFILE%", # Name of file to transcode
-                          "-s 1920x1080", # Set output size to 1920x1080
+                          #"-s 1920x1080", # Set output size to 1920x1080
                           "-pix_fmt yuv420p", # Set pixel format to 4:2:0 YUV
                           "-c:v libx264", # Transcode video to H.264
-                          "-b:v 60m", # Set video bitrate to 60mbps for 1080p, 50mbps for 720p, and 15mbps for 480p
+                          "-b:v 75m", # Set video bitrate to 75mbps, which is for 4K HDR - the rate will be much smaller for lower resolution videos
                           "-profile:v high", # High profile
                           "-bf 2", # Set B-frame generation to two consecutive
                           "-c:a aac", # Transcode audio to AAC
                           "-g 30", # Force GOP to 1/2 framerate
                           "-crf 18", # Set CRF to something middle-of-the-road
-                          "-use_editlist 0", # Use the edit list from stream 0
+                          "-use_editlist 0", # No edit lists
                           "-movflags +faststart", # Relocate MOOV atom to beginning of file
+                          "-r 60", # Force framerate of output to 60FPS (add/drop frames)
                           "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
                           "%DESTFILE%" # Name and path for trandcode output (should be last)
                       ]
@@ -210,9 +207,6 @@ if len(sys.argv) > 1:
 
             # Set the description for later display.
             trans_mode = "Youtube upload - H.264 video, AAC audio, MP4 container"
-
-            # Advance the index.
-            index += 1
 
 
         # Avid DNxHR-HQ transcode
@@ -225,7 +219,6 @@ if len(sys.argv) > 1:
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
-                          "-r 60", # Force framerate of source to 60FPS (add/drop frames)
                           "-hwaccel auto", # Hardware acceleration enabled, auto-detect
                           "-i %SOURCEFILE%", # Name of file to transcode
                           "-c:v dnxhd", # Transcode video to DNxHD
@@ -242,9 +235,6 @@ if len(sys.argv) > 1:
             # Set the description for later display.
             trans_mode = "DNxHR HQ video, 16-bit PCM audio, MOV container"
 
-            # Advance the index.
-            index += 1
-
 
         # Apple ProRes 4444 transcode
         elif argument.lower() == "-prores":
@@ -256,7 +246,6 @@ if len(sys.argv) > 1:
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
-                          "-r 60", # Force framerate of source to 60FPS (add/drop frames)
                           "-hwaccel auto", # Hardware acceleration enabled, auto-detect
                           "-i %SOURCEFILE%", # Name of file to transcode
                           "-pix_fmt yuv422p10le", # Set pixel format to 4:2:2 YUV, 10 bits per pixel
@@ -273,8 +262,79 @@ if len(sys.argv) > 1:
             # Set the description for later display.
             trans_mode = "ProRes 4444 video, 24-bit PCM audio, MOV container"
 
-            # Advance the index.
-            index += 1
+
+        # Plex "nearly universal" HD (1080p) H.264 transcode
+        elif argument.lower() == "-plexhd":
+            # These settings are for transcoding edited videos into a format
+            # that plays without additional transcoding on a wide variet of Plex
+            # clients. This minimizes the demand on the server for client
+            # transcodes. NOTE: Non-HD video is scaled, and non-16:9 aspect
+            # ratio video is either letterboxed or pillarboxed as required.
+            cmdline = [
+                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          "-y", # Assume "yes" to prompts, e.g., overwrite warning
+                          "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
+                          "-nostats", # Don't output a bunch of statistical info on the file
+                          "-hwaccel auto", # Hardware acceleration enabled, auto-detect
+                          "-i %SOURCEFILE%", # Name of file to transcode
+                          "-vf scale=\"'if(gt(a,16/9),1920,-1)':'if(gt(a,16/9),-1,1080)', pad=1920:1080:(1920-iw*min(1920/iw\,1080/ih))/2:(1080-ih*min(1920/iw\,1080/ih))/2\"", # Scale to 1920 wide and/or 1080 high regardless of aspect ratio, and pad extra space for non-16:9 ratios (letterbox or pillarbox)
+                          "-af \"aresample=async=1:min_hard_comp=0.100000:first_pts=0\"", # Audio resample to prevent desync
+                          "-pix_fmt yuv420p", # Set pixel format to 4:2:0 YUV
+                          "-c:v libx264", # Transcode video to H.264
+                          "-level:v 4.0", # Set H.264 level to 4.0, which supports 1080p30 @ up to 20mbps
+                          "-profile:v high", # High profile
+                          "-b:v 8m", # Set video bitrate to 8mbps
+                          "-c:a aac", # Transcode audio to AAC
+                          "-b:a 320k", # Set audio bitrate to 320kbps
+                          "-movflags +faststart", # Relocate MOOV atom to beginning of file
+                          "-r 30", # Force framerate of output to 30FPS (add/drop frames)
+                          "-crf 18", # Set CRF to something middle-of-the-road
+                          "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
+                          "%DESTFILE%" # Name and path for trandcode output (should be last)
+                      ]
+
+            # Set the extension to MP4.
+            new_ext = "mp4"
+
+            # Set the description for later display.
+            trans_mode = "Plex HD - H.264 video, AAC audio, MP4 container"
+
+
+        # Plex "nearly universal" SD (720p) H.264 transcode
+        elif argument.lower() == "-plexsd":
+            # These settings are for transcoding edited videos into a format
+            # that plays without additional transcoding on a wide variet of Plex
+            # clients. This minimizes the demand on the server for client
+            # transcodes. NOTE: Non-SD video is scaled, and non-16:9 aspect
+            # ratio video is either letterboxed or pillarboxed as required.
+            cmdline = [
+                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          "-y", # Assume "yes" to prompts, e.g., overwrite warning
+                          "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
+                          "-nostats", # Don't output a bunch of statistical info on the file
+                          "-hwaccel auto", # Hardware acceleration enabled, auto-detect
+                          "-i %SOURCEFILE%", # Name of file to transcode
+                          "-vf scale=\"'if(gt(a,16/9),1280,-1)':'if(gt(a,16/9),-1,720)', pad=1280:720:(1280-iw*min(1280/iw\,720/ih))/2:(720-ih*min(1280/iw\,720/ih))/2\"", # Scale to 1280 wide and/or 720 high regardless of aspect ratio, and pad extra space for non-16:9 ratios (letterbox or pillarbox)
+                          "-af \"aresample=async=1:min_hard_comp=0.100000:first_pts=0\"", # Audio resample to prevent desync
+                          "-pix_fmt yuv420p", # Set pixel format to 4:2:0 YUV
+                          "-c:v libx264", # Transcode video to H.264
+                          "-level:v 4.0", # Set H.264 level to 4.0, which supports 1080p30 @ up to 20mbps
+                          "-profile:v baseline", # Baseline profile
+                          "-b:v 4m", # Set video bitrate to 4mbps
+                          "-c:a aac", # Transcode audio to AAC
+                          "-b:a 320k", # Set audio bitrate to 320kbps
+                          "-movflags +faststart", # Relocate MOOV atom to beginning of file
+                          "-r 30", # Force framerate of source to 30FPS (add/drop frames)
+                          "-crf 18", # Set CRF to something middle-of-the-road
+                          "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
+                          "%DESTFILE%" # Name and path for trandcode output (should be last)
+                      ]
+
+            # Set the extension to MP4.
+            new_ext = "mp4"
+
+            # Set the description for later display.
+            trans_mode = "Plex SD - H.264 video, AAC audio, MP4 container"
 
 
 #        # Add your own transcode arguments!
@@ -298,11 +358,14 @@ if len(sys.argv) > 1:
 #                          "-y", # Assume "yes" to prompts, e.g., overwrite warning
 #                          "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
 #                          "-nostats", # Don't output a bunch of statistical info on the file
-#                          "-r 60", # Force framerate of source to 60FPS (add/drop frames)
 #                          "-hwaccel auto", # Hardware acceleration enabled, auto-detect
+#                          #
+#                          # Add your specific INPUT flags and settings here. See the other
+#                          # transcode entries for examples.
+#                          #
 #                          "-i %SOURCEFILE%", # Name of file to transcode
 #                          #
-#                          # Add your specific flags and settings here. See the other
+#                          # Add your specific OUTPUT flags and settings here. See the other
 #                          # transcode entries for examples.
 #                          #
 #                          "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
@@ -314,9 +377,6 @@ if len(sys.argv) > 1:
 #
 #            # Set the description for later display.
 #            trans_mode = "Briefly describe the transcode's results here."
-#
-#            # Advance the index.
-#            index += 1
 
 
         # Source directory
@@ -338,9 +398,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity checks, so let's store this argument.
             source_dir = temp
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Destination directory
@@ -362,9 +422,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity checks, so let's store this argument.
             dest_dir = temp
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Finished-transcode storage directory
@@ -386,9 +446,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity checks, so let's store this argument.
             storage_dir = temp
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # ffmpeg location
@@ -415,9 +475,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity checks, so let's store this argument.
             ffmpeg_location = os.path.join(temp, "ffmpeg.exe")
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Config file location
@@ -436,7 +496,7 @@ if len(sys.argv) > 1:
                 quit()
 
             # Parse the config file.
-            config = configparser.ConfigParser()
+            config = configparser.ConfigParser(allow_no_value=True)
 
             # We've passed the sanity checks, so let's grab the config file's
             # contents into a config file parser.
@@ -448,38 +508,47 @@ if len(sys.argv) > 1:
             # variable, which means that the config file overrides the
             # script's commandline BUT the commandline can provide data that
             # is missing from the config file.
-            temp = config.get("paths", "source", raw=True)
-            if temp != "":
-                source_dir = temp
-            temp = config.get("paths", "destination", raw=True)
-            if temp != "":
-                dest_dir = temp
-            temp = config.get("paths", "finished", raw=True)
-            if temp != "":
-                storage_dir = temp
-            temp = config.get("paths", "ffmpeg", raw=True)
-            if temp != "":
-                ffmpeg_location = os.path.join(temp, "ffmpeg.exe")
-            temp = config.get("monitor", "extensions").split(',')
-            if temp != "":
-                file_ext = temp
-            temp = config.get("transcode", "custom", raw=True)
-            if temp != "":
-                cmdline.append(temp)
-                trans_mode = "Custom-defined ffmpeg commandline"
-            temp = config.get("transcode", "container")
-            if temp != "":
-                new_ext = temp
-            temp = config.get("options", "debug")
-            if temp != "":
-                debug_mode = True
-            temp = config.get("options", "flog")
-            if temp != "":
-                save_ffmpeg_output = True
+            if config.has_option("paths", "source"):
+                temp = config.get("paths", "source", raw=True)
+                if temp != "":
+                    source_dir = temp
+            if config.has_option("paths", "destination"):
+                temp = config.get("paths", "destination", raw=True)
+                if temp != "":
+                    dest_dir = temp
+            if config.has_option("paths", "finished"):
+                temp = config.get("paths", "finished", raw=True)
+                if temp != "":
+                    storage_dir = temp
+            if config.has_option("paths", "ffmpeg"):
+                temp = config.get("paths", "ffmpeg", raw=True)
+                if temp != "":
+                    ffmpeg_location = os.path.join(temp, "ffmpeg.exe")
+            if config.has_option("monitor", "extensions"):
+                temp = config.get("monitor", "extensions").split(',')
+                if temp != "":
+                    file_ext = temp
+            if config.has_option("transcode", "custom"):
+                temp = config.get("transcode", "custom", raw=True)
+                if temp != "":
+                    cmdline.append(temp)
+                    trans_mode = "Custom-defined ffmpeg commandline"
+            if config.has_option("transcode", "container"):
+                temp = config.get("transcode", "container")
+                if temp != "":
+                    new_ext = temp
+            if config.has_option("options", "debug"):
+                temp = config.get("options", "debug")
+                if temp != "":
+                    debug_mode = True
+            if config.has_option("options", "flog"):
+                temp = config.get("options", "flog")
+                if temp != "":
+                    save_ffmpeg_output = True
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Filename extensions
@@ -497,9 +566,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity check, so let's store this argument.
             file_exts = temp.split(',')
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Output container
@@ -516,9 +585,9 @@ if len(sys.argv) > 1:
             # We've passed the sanity check, so let's store this argument.
             new_ext = temp
 
-            # Advance the index two steps, skipping the next since it's a
+            # Advance the index an extra step, skipping the next since it's a
             # parameter.
-            index += 2
+            index += 1
 
 
         # Debug mode enable
@@ -527,19 +596,12 @@ if len(sys.argv) > 1:
             # We've passed the sanity check, so let's store this argument.
             debug_mode = True
 
-            # Advance the index two steps, skipping the next since it's a
-            # parameter.
-            index += 1
 
         # ffmpeg logging mode enable
         elif argument.lower() == "-flog":
 
             # We've passed the sanity check, so let's store this argument.
             save_ffmpeg_output = True
-
-            # Advance the index two steps, skipping the next since it's a
-            # parameter.
-            index += 1
 
 
         elif argument.lower() == "--help":
@@ -596,6 +658,16 @@ if len(sys.argv) > 1:
             print("            intechangeable professional editing format that works")
             print("            with a variety of NLEs. WARNING: PRODUCES VERY LARGE")
             print("            FILES.")
+            print(" -plexhd  : Transcodes to a format that streams well over Plex.")
+            print("            without requiring additional server-side transcoding.")
+            print("            Files are scaled to 1080p, framerate is scaled to 30FPS,")
+            print("            and videos with aspect ratios other than 16x9 are either")
+            print("            leterboxed or pillarboxed to fit a 16x9 display.")
+            print(" -plexsd  : Transcodes to a format that streams well over Plex.")
+            print("            without requiring additional server-side transcoding.")
+            print("            Files are scaled to 720p, framerate is scaled to 30FPS,")
+            print("            and videos with aspect ratios other than 16x9 are either")
+            print("            leterboxed or pillarboxed to fit a 16x9 display.")
             print("")
             print("Transcode Container OPTIONS:")
             print("")
@@ -628,6 +700,10 @@ if len(sys.argv) > 1:
             # Something got passed to the script that we don't recognize.
             print("Unrecognized option - please check your command line.")
             quit()
+
+
+        # Advance the index.
+        index += 1
 
 else:
     print("No parameters given. Follow with '--help' for usage information.")
@@ -1022,8 +1098,8 @@ try:
                     for entry in cmdline:
 
                         entry = entry.replace("%FFMPEG%", ffmpeg_location)
-                        entry = entry.replace("%SOURCEFILE%", os.path.join(source_dir, file))
-                        entry = entry.replace("%DESTFILE%", os.path.join(dest_dir, file_name + "." + new_ext))
+                        entry = entry.replace("%SOURCEFILE%", '"' + os.path.join(source_dir, file) + '"')
+                        entry = entry.replace("%DESTFILE%", '"' + os.path.join(dest_dir, file_name + "." + new_ext) + '"')
                         entry = entry.replace("%SPATH%", source_dir)
                         entry = entry.replace("%DPATH%", dest_dir)
                         entry = entry.replace("%NEWEXT%", new_ext)

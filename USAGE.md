@@ -95,6 +95,18 @@ working files that recompress well, albeit at the cost of enormous file sizes
 (multiple gigabytes per minute of runtime ato 1080p60) so make sure you have a 
 lot of storage space. The results are packed into a Quicktime MOV container.
 
+**-plexhd**
+Transcodes to a format that streams well over Plex, without requiring additional 
+server-side transcoding. Files are scaled to 1080p, framerate is scaled to 30FPS,
+and videos with aspect ratios other than 16x9 are either leterboxed or pillarboxed 
+to fit a 16x9 display.
+
+**-plexsd**
+Transcodes to a format that streams well over Plex, without requiring additional 
+server-side transcoding. Files are scaled to 720p, framerate is scaled to 30FPS,
+and videos with aspect ratios other than 16x9 are either leterboxed or pillarboxed 
+to fit a 16x9 display.
+
 
 ## OPTIONS Arguments:
 

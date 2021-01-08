@@ -73,7 +73,8 @@ on this, see CONFIGFILE.md.
 This script requires the following:
 
 - Python 3.8+. It may work on other (especially older) versions, but was 
-  built on version 3.8.5.
+  built on version 3.8.5. NOTE: Windows users can install Python directly
+  from the Microsoft Store, or grab it from Python's website python.org.
   
 - A reasonably recent installation of ffmpeg. Again, other/older versions
   may work, but this script was built against version 4.2.4 for Linux and

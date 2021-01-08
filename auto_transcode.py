@@ -89,7 +89,7 @@ ffmpeg_location = 'ffmpeg'
 source_dir = ''
 
 # File extensions to flag
-file_exts = ["mp4", "m4v", "mkv", "webm", "mov"]
+file_exts = ["avi", "m4v", "mkv", "mov", "mp4", "webm", "wmv"]
 
 # Target directory for transcodes
 dest_dir = ''
@@ -658,7 +658,7 @@ if len(sys.argv) > 1:
             print("            intechangeable professional editing format that works")
             print("            with a variety of NLEs. WARNING: PRODUCES VERY LARGE")
             print("            FILES.")
-            print(" -plexhd  : Transcodes to a format that streams well over Plex.")
+            print(" -plexhd  : Transcodes to a format that streams well over Plex,")
             print("            without requiring additional server-side transcoding.")
             print("            Files are scaled to 1080p, framerate is scaled to 30FPS,")
             print("            and videos with aspect ratios other than 16x9 are either")
@@ -681,7 +681,8 @@ if len(sys.argv) > 1:
             print(" -e [EXTENSIONS] : Monitor source directory for specific filename")
             print("                   extensions. May be a list but entries must be comma-")
             print("                   separated and do not include periods, e.g., 'mp4,mov'.")
-            print("                   Default extensions are 'mp4,m4v,mkv,webm,mov'.")
+            print("                   By default, the most common video file extensions")
+            print("                    supported by ffmpeg are selected.")
             print("")
             print("Debugging OPTIONS:")
             print("")
@@ -883,7 +884,7 @@ def progress_bar(percentage):
 
     # Make an empty holder for the remaining time text.
     remaining_time = '??:??:??'
-    
+
     # Calculate an ETA based on (current time - start time) extrapolated to 100%
     # but don't bother if we're below 10% as the calculation will be largely
     # meaningless in the early part of the job.
@@ -953,15 +954,13 @@ def progress_bar(percentage):
 def file_is_in_use(file):
 
     # We'll take one of two approaches to this, depending on the platform.
-    
+
     if os.name == 'nt':
 
-        # For Windows, we'll try to open the file for exclusive writes. If it
+        # For Windows, we'll try to rename the file to the same name. If it
         # fails with an error, e.g., access-denied, something's working on/with
         # the file.
         try:
-            #with open(file, 'w') as check_file:
-            #    pass
             os.rename(file, file)
             return False
         except:
@@ -979,7 +978,7 @@ def file_is_in_use(file):
             shell=True,
         )
         file_users = is_file_open.stdout.read().decode("utf8", errors="replace").strip()
-        
+
         return (file_users != "")
 
 
@@ -1062,20 +1061,8 @@ try:
                           . format(file), "INFO")
 
 
-                # Check to see if any process has the file open.
-                #is_file_open = subprocess.Popen(
-                #    ['fuser -u "' + os.path.join(source_dir, file) + '"'],
-                #    stdout=subprocess.PIPE,
-                #    stderr=subprocess.STDOUT,
-                #    universal_newlines=False,
-                #    shell=True,
-                #)
-                #file_users = is_file_open.stdout.read().decode("utf8", errors="replace").strip()
-
-
-                # If no users have a claim on the file, let's do things with/to
-                # it.
-                #if file_users == '':
+                # Check to see if any process has the file open. If no users
+                # have a claim on the file, let's do things with/to it.
                 if not file_is_in_use(file):
 
                     # Note in the log that the file will be transcoded.
@@ -1173,6 +1160,35 @@ try:
                                 last_prog_pct = prog_pct
 
 
+                        # Get the current time, then the difference from start.
+                        current_time = datetime.datetime.now()
+                        time_diff = current_time - start_time
+
+                        # Create a blank variable for the total time the transcode
+                        # took.
+                        elapsed_time = ''
+
+                        # Break the time difference down into days/hours/mins/secs,
+                        # and build display text based on the results.
+                        (days, remainder) = divmod(time_diff.total_seconds(), 86400)
+                        (hours, remainder) = divmod(remainder, 3600)
+                        (minutes, seconds) = divmod(remainder, 60)   
+                        days = int(days)
+                        hours = int(hours)
+                        minutes = int(minutes)
+                        seconds = int(seconds)
+                        if time_diff.total_seconds() > 86400:
+                            elapsed_time = ("{}:{:02d}:{:02d}:{:02d}"
+                                              . format(days, hours, minutes, seconds))
+                        elif time_diff.total_seconds() > 3600:
+                            elapsed_time = ("{}:{:02d}:{:02d}"
+                                              . format(hours, minutes, seconds))
+                        elif time_diff.total_seconds() > 60:
+                            elapsed_time = "00:{:02d}:{:02d}" . format(minutes, seconds)
+                        else:        
+                            elapsed_time = "{}s" . format(seconds)
+
+
                         # Write a little bit of whitespace to the log file
                         # and close it.
                         if save_ffmpeg_output == True:
@@ -1183,7 +1199,8 @@ try:
                         # Transcode complete!
                         sys.stdout.write('\n')
                         sys.stdout.flush()
-                        write_log("  Transcode complete!", "INFO")
+                        write_log("  Transcode completed in {}."
+                                  . format(elapsed_time), "INFO")
 
                         # Sleep 5 seconds for everything to settle.
                         time.sleep(5)

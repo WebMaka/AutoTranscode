@@ -61,6 +61,10 @@ The transcode presets include:
 		   consoles. Video that is in a different aspect ratio than 16x9 is
 		   automatically letterboxed or pillarboxed as required, and the
 		   framerate is adjusted to 30FPS.
+		   
+-webm : Transcodes into WebM (VP9) format, in single-pass constant-quality mode. This 
+format lends itself well toward uploads to image hosting sites that support short
+animations as well as still image formats.
 
 This script also supports the use of a configuration file for all of its
 commandline options, and the config file also grants the capability to

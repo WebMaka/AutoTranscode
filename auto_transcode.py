@@ -122,7 +122,7 @@ if not path.endswith(os.path.sep):
 
 # Show some Copyright/version/legal messages.
 script_name = "Automatic FFMPEG Transcoding Handler Script"
-version = "0.1"
+version = "0.2"
 print(" ")
 print("{} ({})" . format(script_name, sys.argv[0]))
 print("Version {}" . format(version))
@@ -335,6 +335,29 @@ if len(sys.argv) > 1:
 
             # Set the description for later display.
             trans_mode = "Plex SD - H.264 video, AAC audio, MP4 container"
+
+
+        # WebM (VP9) Constant-Quality single-pass transcode
+        elif argument.lower() == "-webm":
+            cmdline = [
+                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          "-y", # Assume "yes" to prompts, e.g., overwrite warning
+                          "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
+                          "-nostats", # Don't output a bunch of statistical info on the file
+                          "-hwaccel auto", # Hardware acceleration enabled, auto-detect
+                          "-i %SOURCEFILE%", # Name of file to transcode
+                          "-c:v libvpx-vp9", # Transcode to VP9
+                          "-crf 30", # Set CRF to something middle-of-the-road
+                          "-b:v 0", # Force CONSTANT-QUALITY mde
+                          "-f %NEWEXT%", # Transcode into container based on "new_ext" variable
+                          "%DESTFILE%" # Name and path for trandcode output (should be last)
+                      ]
+
+            # Set the extension to MOV.
+            new_ext = "webm"
+
+            # Set the description for later display.
+            trans_mode = "WebM (VP9) Constant-Quality Single-Pass"
 
 
 #        # Add your own transcode arguments!
@@ -668,6 +691,9 @@ if len(sys.argv) > 1:
             print("            Files are scaled to 720p, framerate is scaled to 30FPS,")
             print("            and videos with aspect ratios other than 16x9 are either")
             print("            leterboxed or pillarboxed to fit a 16x9 display.")
+            print(" -webm    : Transcode to WebM (VP9) constant-quality mode, which is")
+            print("            a popular mode for image hosting sites that support")
+            print("            short animations.")
             print("")
             print("Transcode Container OPTIONS:")
             print("")
@@ -1130,7 +1156,8 @@ try:
                             # Grab a line of output from ffmpeg.
                             line = ffmpeg.stdout.readline().decode("utf8", errors="replace").strip()
 
-                            # If the line is empty, we're done.
+                            # If the line is empty and poll() is no longer None,
+                            # we're done.
                             if line == "" and ffmpeg.poll() is not None:
                                 break                                
 
@@ -1158,6 +1185,23 @@ try:
                                 sys.stdout.write(progress_bar_text)
                                 sys.stdout.flush()
                                 last_prog_pct = prog_pct
+
+
+                        # Check for a non-zero return code (error) from ffmpeg.
+                        if ffmpeg.returncode != 0:
+                            if save_ffmpeg_output == True:
+                                write_log("  Transcode failed. Check the ffmpeg"
+                                          " output log for more information.",
+                                          "ERROR")
+
+                            else:
+                                write_log("  Transcode failed. Enable ffmpeg "
+                                          "output logging with -flog and retry "
+                                          "for more information.",
+                                          "ERROR")
+
+                            # Quit so the transcode failure can be investigated.
+                            sys.exit(0)
 
 
                         # Get the current time, then the difference from start.
@@ -1253,6 +1297,19 @@ try:
 
         # Sleep for a bit before doing it all again.
         time.sleep(loop_delay)
+
+except SystemExit:
+    write_log("Exiting.", "INFO")
+
+    # Exit normally.
+    sys.exit(0)
+
+except KeyboardInterrupt:
+    write_log("Exiting.", "INFO")
+
+    # Exit normally.
+    sys.exit(0)
+
 
 except:
     # Log the error. (The "\033[?25h" turns the cursor back on so the terminal

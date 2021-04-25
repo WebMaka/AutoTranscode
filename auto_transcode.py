@@ -664,8 +664,6 @@ if len(sys.argv) > 1:
             print("")
             print("TRANSCODE Choices:")
             print("")
-            print(" NOTE: These can appear in any order.")
-            print("")
             print(" -davinci : Transcode to a format compatible with the Linux version")
             print("            of Davinci Resolve 16+ - MPEG4 video, PCM16LE audio,")
             print("            max quality, Quicktime MOV container.")            
@@ -708,7 +706,7 @@ if len(sys.argv) > 1:
             print("                   extensions. May be a list but entries must be comma-")
             print("                   separated and do not include periods, e.g., 'mp4,mov'.")
             print("                   By default, the most common video file extensions")
-            print("                    supported by ffmpeg are selected.")
+            print("                   supported by ffmpeg are selected.")
             print("")
             print("Debugging OPTIONS:")
             print("")
@@ -1109,8 +1107,8 @@ try:
                     file_name, _ = os.path.splitext(file)
 
 
-                    # Update the command line to include filenames. This is
-                    # basically a form of token replacement.
+                    # Build the command line by performing token replacement as
+                    # required.
                     for entry in cmdline:
 
                         #entry = entry.replace("%FFMPEG%", ffmpeg_location)
@@ -1304,19 +1302,26 @@ try:
 except SystemExit:
     write_log("Exiting.", "INFO")
 
+    # The "\033[?25h" turns the cursor back on so the terminal has a cursor
+    # when the script exits. This is only needded on Linux.
+    if os.name != 'nt':
+        write_log("\033[?25h", "ERROR")
+
     # Exit normally.
     sys.exit(0)
 
 except KeyboardInterrupt:
     write_log("Exiting.", "INFO")
 
+    if os.name != 'nt':
+        write_log("\033[?25h", "ERROR")
+
     # Exit normally.
     sys.exit(0)
 
 
 except:
-    # Log the error. (The "\033[?25h" turns the cursor back on so the terminal
-    # has a cursor when the script exits.)
+    # Log the error.
     write_log("*** ERROR!", "ERROR")
     write_log(traceback.print_exc(), "ERROR")
     if os.name != 'nt':

@@ -122,7 +122,7 @@ if not path.endswith(os.path.sep):
 
 # Show some Copyright/version/legal messages.
 script_name = "Automatic FFMPEG Transcoding Handler Script"
-version = "0.2"
+version = "0.3"
 print(" ")
 print("{} ({})" . format(script_name, sys.argv[0]))
 print("Version {}" . format(version))
@@ -152,7 +152,7 @@ if len(sys.argv) > 1:
             # and will transcode things like Twitch streams into a format that
             # Resolve will work with without requiring further alteration.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -180,7 +180,7 @@ if len(sys.argv) > 1:
             # that uploads quickly to Youtube. It follows the recommended
             # encoding spec guidelines for Youtube as of 15 Dec 2020.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -215,7 +215,7 @@ if len(sys.argv) > 1:
             # working format for professional video editing. The files can be
             # huge, but the resulting quality is about as good as it gets.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -242,7 +242,7 @@ if len(sys.argv) > 1:
             # working format for professional video editing. The files can be
             # huge, but the resulting quality is about as good as it gets.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -271,7 +271,7 @@ if len(sys.argv) > 1:
             # transcodes. NOTE: Non-HD video is scaled, and non-16:9 aspect
             # ratio video is either letterboxed or pillarboxed as required.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -308,7 +308,7 @@ if len(sys.argv) > 1:
             # transcodes. NOTE: Non-SD video is scaled, and non-16:9 aspect
             # ratio video is either letterboxed or pillarboxed as required.
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -340,7 +340,7 @@ if len(sys.argv) > 1:
         # WebM (VP9) Constant-Quality single-pass transcode
         elif argument.lower() == "-webm":
             cmdline = [
-                          "%FFMPEG%", # Required for obvious reasons and must be #1
+                          #"%FFMPEG%", # Required for obvious reasons and must be #1
                           "-y", # Assume "yes" to prompts, e.g., overwrite warning
                           "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
                           "-nostats", # Don't output a bunch of statistical info on the file
@@ -377,7 +377,7 @@ if len(sys.argv) > 1:
 #            #   %DESTFILE% : destination file (filename, with full path, but with NEW extension)
 #            #   %NEWEXT% : New file extension, taken from the "new_ext" variable
 #            cmdline = [
-#                          "%FFMPEG%", # Required for obvious reasons and must be #1
+#                          #"%FFMPEG%", # Required for obvious reasons and must be #1
 #                          "-y", # Assume "yes" to prompts, e.g., overwrite warning
 #                          "-progress -", # Output progress info (and yes that second hyphen is REQUIRED)
 #                          "-nostats", # Don't output a bunch of statistical info on the file
@@ -685,12 +685,12 @@ if len(sys.argv) > 1:
             print("            without requiring additional server-side transcoding.")
             print("            Files are scaled to 1080p, framerate is scaled to 30FPS,")
             print("            and videos with aspect ratios other than 16x9 are either")
-            print("            leterboxed or pillarboxed to fit a 16x9 display.")
+            print("            letterboxed or pillarboxed to fit a 16x9 display.")
             print(" -plexsd  : Transcodes to a format that streams well over Plex.")
             print("            without requiring additional server-side transcoding.")
             print("            Files are scaled to 720p, framerate is scaled to 30FPS,")
             print("            and videos with aspect ratios other than 16x9 are either")
-            print("            leterboxed or pillarboxed to fit a 16x9 display.")
+            print("            letterboxed or pillarboxed to fit a 16x9 display.")
             print(" -webm    : Transcode to WebM (VP9) constant-quality mode, which is")
             print("            a popular mode for image hosting sites that support")
             print("            short animations.")
@@ -1101,6 +1101,9 @@ try:
                     # file.
                     this_cmdline.clear()
 
+                    # Start with ffmpeg itself.
+                    this_cmdline.append(ffmpeg_location)
+
                     # Split off the filename into root name and extension
                     # (we don't care about the extension).
                     file_name, _ = os.path.splitext(file)
@@ -1110,7 +1113,7 @@ try:
                     # basically a form of token replacement.
                     for entry in cmdline:
 
-                        entry = entry.replace("%FFMPEG%", ffmpeg_location)
+                        #entry = entry.replace("%FFMPEG%", ffmpeg_location)
                         entry = entry.replace("%SOURCEFILE%", '"' + os.path.join(source_dir, file) + '"')
                         entry = entry.replace("%DESTFILE%", '"' + os.path.join(dest_dir, file_name + "." + new_ext) + '"')
                         entry = entry.replace("%SPATH%", source_dir)

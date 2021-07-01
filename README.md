@@ -55,7 +55,7 @@ The transcode presets include:
 
 -plexhd/-plexsd : Transcodes into MP4 files optimized for delivery over Plex streaming 
                    servers with minimal need for server-side transcoding. These formats
-		   use MPEG4 video and AAC audio, in either 1808p (-plexhd) or 720p
+		   use MPEG4 video and AAC audio, in either 1080p (-plexhd) or 720p
 		   (-plexsd) with settings intended to work without further server-side
 		   transcoding on the vast majority of Plex clients, including game
 		   consoles. Video that is in a different aspect ratio than 16x9 is

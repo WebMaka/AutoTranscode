@@ -99,10 +99,6 @@ dest_dir = ''
 # extension once the transcode finishes. This way they won't be reprocessed.
 storage_dir = ''
 
-# File countdown time - if a file has stopped changing sizes, wait (this value
-# * loop delay time) seconds before processing it.
-countdown_time = 2
-
 # Transcoded file extension, e.g., "mov" for Quicktime MOV, "mp4" for MPEG4,
 # "mkv" for Matroska, etc.
 new_ext = ''
@@ -122,7 +118,7 @@ if not path.endswith(os.path.sep):
 
 # Show some Copyright/version/legal messages.
 script_name = "Automatic FFMPEG Transcoding Handler Script"
-version = "0.3"
+version = "0.32"
 print(" ")
 print("{} ({})" . format(script_name, sys.argv[0]))
 print("Version {}" . format(version))
@@ -490,13 +486,24 @@ if len(sys.argv) > 1:
                 print("ffmpeg directory doesn't exist - please check your command line.")
                 quit()
 
-            # Sanity check - can we find ffmpeg via this path?
-            if not os.path.isfile(os.path.join(temp, "ffmpeg.exe")):
-                print("ffmpeg doesn't exist in the provided location - please check your command line.")
-                quit()
+            # These next sanity checks are a little OS-specific, as Windows will
+            # have an "exe" extension on the ffmpeg binary and Linux won't.
+            if os.name == 'nt':
+                # Sanity check - can we find ffmpeg via this path?
+                if not os.path.isfile(os.path.join(temp, "ffmpeg.exe")):
+                    print("ffmpeg doesn't exist in the provided location - please check your command line.")
+                    quit()
 
-            # We've passed the sanity checks, so let's store this argument.
-            ffmpeg_location = os.path.join(temp, "ffmpeg.exe")
+                # We've passed the sanity checks, so let's store this argument.
+                ffmpeg_location = os.path.join(temp, "ffmpeg.exe")
+            else:
+                # Sanity check - can we find ffmpeg via this path?
+                if not os.path.isfile(os.path.join(temp, "ffmpeg")):
+                    print("ffmpeg doesn't exist in the provided location - please check your command line.")
+                    quit()
+
+                # We've passed the sanity checks, so let's store this argument.
+                ffmpeg_location = os.path.join(temp, "ffmpeg")
 
             # Advance the index an extra step, skipping the next since it's a
             # parameter.
@@ -718,6 +725,11 @@ if len(sys.argv) > 1:
             print("          copied to a log file. NOTE: This log file can become")
             print("          pretty large over time.")
             print("")
+            quit()
+
+
+        elif argument.lower() == "--version":
+            # Version info is already done, so just quit.
             quit()
 
 
@@ -1299,6 +1311,7 @@ try:
         # Sleep for a bit before doing it all again.
         time.sleep(loop_delay)
 
+
 except SystemExit:
     write_log("Exiting.", "INFO")
 
@@ -1309,6 +1322,7 @@ except SystemExit:
 
     # Exit normally.
     sys.exit(0)
+
 
 except KeyboardInterrupt:
     write_log("Exiting.", "INFO")

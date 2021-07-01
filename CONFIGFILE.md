@@ -33,8 +33,8 @@ The config file is a standard INI file, with the following contents:
 	# Custom ffmpeg commandline string
 	#
 	# Please note the following tokens are allowed:
-	#   %SPATH% : Source directory provided by caller (not generally needed here)
-	#   %DPATH% : Destination directory provided by caller (not generally needed here)
+	#   %SPATH% : Source directory provided by caller (uses the path in "source" above)
+	#   %DPATH% : Destination directory provided by caller (uses the path in "destination" above)
 	#   %SOURCEFILE% : target file (filename, with full path)
 	#   %DESTFILE% : destination file (filename, with full path, but with NEW extension)
 	#   %NEWEXT% : New file extension, taken from the "container" option below

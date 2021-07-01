@@ -119,7 +119,7 @@ line via config file
 
 **-e EXTENSIONS**  
 Filename extensions to watch for and act upon. This can be a list of extensions
-but must be comma-searated and not include whitespace or punctuation, e.g., 
+but must be comma-separated and not include whitespace or punctuation, e.g., 
 "mp4,m4v,mov". Default extensions are "mp4,m4v,mkv,webm,mov".
 
 **-debug**  
